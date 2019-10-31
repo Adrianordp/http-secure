@@ -1,49 +1,78 @@
-import BaseHTTPServer
-from SimpleHTTPServer import SimpleHTTPRequestHandler
-import sys
+# Extended python -m http.serve with --username and --password parameters for
+# basic auth, based on https://gist.github.com/fxsjy/5465353
+
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, test
 import base64
+import os
 
-key = ""
 
-class AuthHandler(SimpleHTTPRequestHandler):
-    ''' Main class to present webpages and authentication. '''
+class AuthHTTPRequestHandler(SimpleHTTPRequestHandler):
+    """ Main class to present webpages and authentication. """
+
+    def __init__(self, *args, **kwargs):
+        username = kwargs.pop("username")
+        password = kwargs.pop("password")
+        self._auth = base64.b64encode(f"{username}:{password}".encode()).decode()
+        super().__init__(*args, **kwargs)
+
     def do_HEAD(self):
-        print "send header"
         self.send_response(200)
-        self.send_header('Content-type', 'text/html')
+        self.send_header("Content-type", "text/html")
         self.end_headers()
 
     def do_AUTHHEAD(self):
-        print "send header"
         self.send_response(401)
-        self.send_header('WWW-Authenticate', 'Basic realm=\"Test\"')
-        self.send_header('Content-type', 'text/html')
+        self.send_header("WWW-Authenticate", 'Basic realm="Test"')
+        self.send_header("Content-type", "text/html")
         self.end_headers()
 
     def do_GET(self):
-        global key
-        ''' Present frontpage with user authentication. '''
-        if self.headers.getheader('Authorization') == None:
+        """ Present frontpage with user authentication. """
+        if self.headers.get("Authorization") == None:
             self.do_AUTHHEAD()
-            self.wfile.write('no auth header received')
-            pass
-        elif self.headers.getheader('Authorization') == 'Basic '+key:
+            self.wfile.write(b"no auth header received")
+        elif self.headers.get("Authorization") == "Basic " + self._auth:
             SimpleHTTPRequestHandler.do_GET(self)
-            pass
         else:
             self.do_AUTHHEAD()
-            self.wfile.write(self.headers.getheader('Authorization'))
-            self.wfile.write('not authenticated')
-            pass
-
-def test(HandlerClass = AuthHandler,
-         ServerClass = BaseHTTPServer.HTTPServer):
-    BaseHTTPServer.test(HandlerClass, ServerClass)
+            self.wfile.write(self.headers.get("Authorization").encode())
+            self.wfile.write(b"not authenticated")
 
 
-if __name__ == '__main__':
-    if len(sys.argv)<3:
-        print "usage SimpleAuthServer.py [port] [username:password]"
-        sys.exit()
-    key = base64.b64encode(sys.argv[2])
-    test()
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--cgi", action="store_true", help="Run as CGI Server")
+    parser.add_argument(
+        "--bind",
+        "-b",
+        metavar="ADDRESS",
+        default="127.0.0.1",
+        help="Specify alternate bind address " "[default: all interfaces]",
+    )
+    parser.add_argument(
+        "--directory",
+        "-d",
+        default=os.getcwd(),
+        help="Specify alternative directory " "[default:current directory]",
+    )
+    parser.add_argument(
+        "port",
+        action="store",
+        default=8000,
+        type=int,
+        nargs="?",
+        help="Specify alternate port [default: 8000]",
+    )
+    parser.add_argument("--username", "-u", metavar="USERNAME")
+    parser.add_argument("--password", "-p", metavar="PASSWORD")
+    args = parser.parse_args()
+    handler_class = partial(
+        AuthHTTPRequestHandler,
+        username=args.username,
+        password=args.password,
+        directory=args.directory,
+    )
+    test(HandlerClass=handler_class, port=args.port, bind=args.bind)
