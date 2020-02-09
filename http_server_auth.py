@@ -1,6 +1,6 @@
 # Extended python -m http.serve with --username and --password parameters for
 # basic auth, based on https://gist.github.com/fxsjy/5465353
-
+# Usage: python -m http_server_auth -u USERNAME -p PASSWORD -d .
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, test
 import base64
@@ -14,7 +14,7 @@ class AuthHTTPRequestHandler(SimpleHTTPRequestHandler):
         username = kwargs.pop("username")
         password = kwargs.pop("password")
         self._auth = base64.b64encode(f"{username}:{password}".encode()).decode()
-        super().__init__(*args, **kwargs)
+        super().__init__(*args)
 
     def do_HEAD(self):
         self.send_response(200)
