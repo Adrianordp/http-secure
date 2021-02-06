@@ -80,4 +80,4 @@ f.write(text)
 f.close()
 
 # Feedbacks to user where the file was created
-print("Password file created at "+path+'.')
+print("Password file created at "+path)
