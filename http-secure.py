@@ -99,10 +99,12 @@ if __name__ == "__main__":
         nargs="?",
         help="Specify alternate port",
     )
+    home = os.path.expanduser("~")
+    mainFolder = os.path.join(home,".passwd-files")
     parser.add_argument(
             "--password-file", "-f",
             metavar="PASSWORDFIlE",
-            default=os.path.join(os.getcwd(),'http-secure.passwd'),
+            default=os.path.join(mainFolder,'http-secure.passwd'),
             help="Specify password file path")
 
     args = parser.parse_args()
