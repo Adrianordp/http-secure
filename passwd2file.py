@@ -56,8 +56,11 @@ if password == '':
     sys.exit()
 
 text = base64.b64encode(f"{username}:{password}".encode()).decode()
+
 path = args.path
-if '.passwd' not in args.path:
+if os.path.isdir(path):
+    path = os.path.join(path, "http-secure.passwd")
+elif '.passwd' not in args.path:
     path = path+'.passwd'
 
 f = open(path,'w')
