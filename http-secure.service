@@ -23,7 +23,7 @@ Description=Http server protected with password to home folder
 After=network-online.target
 
 [Service]
-User=adriano # Change User accordingly
+User=adriano
 ExecStart=/home/adriano/git/http-secure/http-secure.sh
 
 [Install]
