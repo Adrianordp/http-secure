@@ -1,20 +1,52 @@
-# Extended python -m http.serve with --username and --password parameters for
-# basic auth, based on https://gist.github.com/fxsjy/5465353
-# Usage: python -m http_server_auth -u USERNAME -p PASSWORD -d .
+#!/bin/python3
+
+# Based on https://gist.github.com/fxsjy/5465353
+# and on https://gist.github.com/epiasini/60012a7a245f5fd8980fcc1a5c3c8085
+
+# HELP:
+# usage: http-secure.py [-h] [--cgi] [--bind ADDRESS] [--directory DIRECTORY] [--password-file PASSWORDFIlE] [port]
+#
+# Opens a python3 http.server protected by a password file from passwd2file.py
+#
+# positional arguments:
+#   port                   Specify alternate port [default: 8000]
+# 
+# optional arguments:
+#   -h, --help             show this help message and exit
+#   --cgi                  Run as CGI Server
+# 
+#   --bind ADDRESS,
+#    -b ADDRESS            Specify alternate bind address [default: all interfaces]
+#   --directory DIRECTORY,
+#    -d DIRECTORY          Specify alternative directory [default:current directory]
+#
+#   --password-file PASSWORDFIlE,
+#    -f PASSWORDFIlE
+
+# EXAMPLE:
+# python3 http-secure.py -d /home/ -b 0.0.0.0 -f /home/$MYUSER/.passwd-files/http-secure.passwd
+
+#***********************************************
+#          !!! WARNING SECTION !!!
+#
+# TO RUN THIS APPLICATION YOU'LL NEED A PASSWORD
+# FILE GENERATED VIA python3 passwd2file.py 
+# 
+#***********************************************
+
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, test
 import base64
 import os
 
-
 class AuthHTTPRequestHandler(SimpleHTTPRequestHandler):
     """ Main class to present webpages and authentication. """
 
     def __init__(self, *args, **kwargs):
-        username = kwargs.pop("username")
-        password = kwargs.pop("password")
-        self._auth = base64.b64encode(f"{username}:{password}".encode()).decode()
-        super().__init__(*args)
+        passwordFilePath = kwargs.pop("password_file")
+        passwordFile     = open(passwordFilePath, 'r')
+        self._auth       = passwordFile.read()
+        super().__init__(*args, **kwargs)
 
     def do_HEAD(self):
         self.send_response(200)
@@ -39,24 +71,25 @@ class AuthHTTPRequestHandler(SimpleHTTPRequestHandler):
             self.wfile.write(self.headers.get("Authorization").encode())
             self.wfile.write(b"not authenticated")
 
-
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+            description="Opens a python3 http.server protected by a password file from passwd2file.py",
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--cgi", action="store_true", help="Run as CGI Server")
     parser.add_argument(
         "--bind",
         "-b",
         metavar="ADDRESS",
         default="127.0.0.1",
-        help="Specify alternate bind address " "[default: all interfaces]",
+        help="Specify alternate bind address ",
     )
     parser.add_argument(
         "--directory",
         "-d",
         default=os.getcwd(),
-        help="Specify alternative directory " "[default:current directory]",
+        help="Specify alternative directory ",
     )
     parser.add_argument(
         "port",
@@ -64,15 +97,18 @@ if __name__ == "__main__":
         default=8000,
         type=int,
         nargs="?",
-        help="Specify alternate port [default: 8000]",
+        help="Specify alternate port",
     )
-    parser.add_argument("--username", "-u", metavar="USERNAME")
-    parser.add_argument("--password", "-p", metavar="PASSWORD")
+    parser.add_argument(
+            "--password-file", "-f",
+            metavar="PASSWORDFIlE",
+            default=os.path.join(os.getcwd(),'http-secure.passwd'),
+            help="Specify password file path")
+
     args = parser.parse_args()
     handler_class = partial(
         AuthHTTPRequestHandler,
-        username=args.username,
-        password=args.password,
+        password_file=args.password_file,
         directory=args.directory,
     )
     test(HandlerClass=handler_class, port=args.port, bind=args.bind)
