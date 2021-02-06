@@ -9,6 +9,9 @@
 #
 # If you want to start this service on every reboot, enable it:
 #	$ sudo systemctl enable http-secure.service
+#
+# Check if service is running:
+# 	$ sudo systemctl status http-secure.service
 
 #****************************************************
 #              !!! WARNING SECTION !!!
