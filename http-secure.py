@@ -39,6 +39,7 @@ from http.server import SimpleHTTPRequestHandler, test
 import base64
 import os
 
+
 class AuthHTTPRequestHandler(SimpleHTTPRequestHandler):
     """ Main class to present webpages and authentication. """
 
@@ -74,9 +75,12 @@ class AuthHTTPRequestHandler(SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     import argparse
 
+    # Parser basic configuration
     parser = argparse.ArgumentParser(
             description="Opens a python3 http.server protected by a password file from passwd2file.py",
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    
+    # CGI argument
     parser.add_argument("--cgi", action="store_true", help="Run as CGI Server")
     parser.add_argument(
         "--bind",
@@ -85,12 +89,14 @@ if __name__ == "__main__":
         default="127.0.0.1",
         help="Specify alternate bind address ",
     )
+    # Directory argument
     parser.add_argument(
         "--directory",
         "-d",
         default=os.getcwd(),
         help="Specify alternative directory ",
     )
+    # Port argument
     parser.add_argument(
         "port",
         action="store",
@@ -99,15 +105,22 @@ if __name__ == "__main__":
         nargs="?",
         help="Specify alternate port",
     )
+    
+    # Store user home folder path
     home = os.path.expanduser("~")
+    # Store default password files path
     mainFolder = os.path.join(home,".passwd-files")
+    # Password file path argument
     parser.add_argument(
             "--password-file", "-f",
             metavar="PASSWORDFIlE",
             default=os.path.join(mainFolder,'http-secure.passwd'),
             help="Specify password file path")
 
+    # Get arguments
     args = parser.parse_args()
+
+    # Pass arguments to AuthHTTPRequestHandler class
     handler_class = partial(
         AuthHTTPRequestHandler,
         password_file=args.password_file,
