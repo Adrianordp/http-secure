@@ -55,10 +55,6 @@ if password == '':
     print("Password can't be empty!")
     sys.exit()
 
-# salt = base64.b64encode(os.urandom(12))
-# saltyHashBytes  = hashlib.sha512(salt+user+b':'+passwd)
-# saltyHashString = base64.b64encode(saltyHashBytes.digest()).decode()[:-2]
-# text = salt.decode()+'$'+saltyHashString
 text = base64.b64encode(f"{username}:{password}".encode()).decode()
 path = args.path
 if '.passwd' not in args.path:
@@ -67,10 +63,5 @@ if '.passwd' not in args.path:
 f = open(path,'w')
 f.write(text)
 f.close()
-print("Password file createusage: createPasswdFile [-h] [--path PATH]
 
-Creates a password file according to Basic WWW-Authenticationi Scheme RFC 7617
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --path PATH, -p PATH  Specify password file path (default: /home/adriano/.passwd-files/http-secure.passwd)d at "+path+'.')
+print("Password file created at "+path+'.')
