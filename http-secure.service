@@ -1,0 +1,30 @@
+# How to use it?
+#
+# Create a copy of this file "http-secure.service" on /etc/systemd/system/:
+#	$ cp [this-file] /etc/systemd/system/
+#
+# Start the service:
+# 	$ sudo systemctl daemon-reload
+#       $ sudo systemctl start http-secure.service
+#
+# If you want to start this service on every reboot, enable it:
+#	$ sudo systemctl enable http-secure.service
+
+#****************************************************
+#              !!! WARNING SECTION !!!
+#
+# CHANGE [Service]>User TO YOUR USER!
+# CHANGE [Service]>ExecStart TO POINT TO YOUR SCRIPT!
+#
+#****************************************************
+
+[Unit]
+Description=Http server protected with password to home folder
+After=network-online.target
+
+[Service]
+User=adriano # Change User accordingly
+ExecStart=/home/adriano/git/http-secure/http-secure.sh
+
+[Install]
+WantedBy=multi-user.target
