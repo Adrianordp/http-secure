@@ -1,12 +1,6 @@
-<h1 align="center">
-http-secure
-</h1>
-<p align="center">
+# http-secure
 Protect your python HTTP server with a password file!
-<br>
 Works on <b>Linux</b>
-
-</p>
 
 ## 1. passwd2file.py
 
