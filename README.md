@@ -2,12 +2,37 @@
 Protect your python HTTP server with a password file!
 Works on <b>Linux</b>
 
+## 0. Basic Usage
+Create a password file using ```passwd2file.py```:
+```
+python3 passwd2file.py # type your password and user
+```
+Then modify ```http-secure.sh``` with a text editor to the following changes:
+* Type your path to ```passwd2file.py``` (mandatory);
+* Type your path to ```.passwd``` file (mandatory);
+* Set the desired port (optional);
+* Set the desired target path (optional).
+
+Then modifty ```http-secure.service``` with a text editor to the following change:
+* Type your user name in ```User=``` field;
+* Type your path to ```http-secure.sh``` in ```ExecStart=``` field.
+
+Lastly, copy the ```http-secure.service``` file to your ```systemd``` scripts folder and activate it:
+```
+sudo cp http-secure.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable http-secure.service
+sudo systemctl start http-secure.service
+```
+
+The following steps are designed for advanced usage and setup.
+
 ## 1. passwd2file.py
 
 ### 1.1 Help
 ```
 $ python3 passwd2file -h
-usage: createPasswdFile [-h] [--path PATH]
+usage: passwd2file [-h] [--path PATH]
 
 Creates a password file according to Basic WWW-Authenticationi Scheme RFC 7617
 
@@ -20,7 +45,7 @@ optional arguments:
 
 input:
 ```  # ...on 
-    $ python3 createPasswdFile.py --path .
+    $ python3 passwd2file.py --path .
 ```
 
 output:
